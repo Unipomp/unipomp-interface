@@ -2,16 +2,12 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
 import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@unipomp/sdk'
 import { useMemo } from 'react'
-import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
-import { getTradeVersion, useV1TradeExchangeAddress } from '../data/V1'
+import { BIPS_BASE, DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE, ROUTER_ADDRESS } from '../constants'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { calculateGasMargin, getRouterContract, isAddress, shortenAddress } from '../utils'
 import isZero from '../utils/isZero'
-import v1SwapArguments from '../utils/v1SwapArguments'
 import { useActiveWeb3React } from './index'
-import { useV1ExchangeContract } from './useContract'
 import useENS from './useENS'
-import { Version } from './useToggledVersion'
 
 export enum SwapCallbackState {
   INVALID,
@@ -54,54 +50,39 @@ function useSwapCallArguments(
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
 
-  const v1Exchange = useV1ExchangeContract(useV1TradeExchangeAddress(trade), true)
-
   return useMemo(() => {
-    const tradeVersion = getTradeVersion(trade)
+    const tradeVersion = 'v2'
     if (!trade || !recipient || !library || !account || !tradeVersion || !chainId) return []
 
     const contract: Contract | null =
-      tradeVersion === Version.v2 ? getRouterContract(chainId, library, account) : v1Exchange
+      getRouterContract(chainId, library, account)
     if (!contract) {
       return []
     }
 
     const swapMethods = []
 
-    switch (tradeVersion) {
-      case Version.v2:
-        swapMethods.push(
-          Router.swapCallParameters(trade, {
-            feeOnTransfer: false,
-            allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
-            recipient,
-            ttl: deadline
-          })
-        )
+    swapMethods.push(
+      Router.swapCallParameters(trade, {
+        feeOnTransfer: false,
+        allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
+        recipient,
+        ttl: deadline
+      })
+    )
 
-        if (trade.tradeType === TradeType.EXACT_INPUT) {
-          swapMethods.push(
-            Router.swapCallParameters(trade, {
-              feeOnTransfer: true,
-              allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
-              recipient,
-              ttl: deadline
-            })
-          )
-        }
-        break
-      case Version.v1:
-        swapMethods.push(
-          v1SwapArguments(trade, {
-            allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
-            recipient,
-            ttl: deadline
-          })
-        )
-        break
+    if (trade.tradeType === TradeType.EXACT_INPUT) {
+      swapMethods.push(
+        Router.swapCallParameters(trade, {
+          feeOnTransfer: true,
+          allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
+          recipient,
+          ttl: deadline
+        })
+      )
     }
     return swapMethods.map(parameters => ({ parameters, contract }))
-  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, v1Exchange])
+  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, ROUTER_ADDRESS])
 }
 
 const DEFAULT_FAILED_SWAP_ERROR = 'Unexpected error. Please try again or contact support.'
@@ -134,8 +115,6 @@ export function useSwapCallback(
         return { state: SwapCallbackState.LOADING, callback: null, error: null }
       }
     }
-
-    const tradeVersion = getTradeVersion(trade)
 
     return {
       state: SwapCallbackState.VALID,
@@ -219,8 +198,7 @@ export function useSwapCallback(
                       : recipientAddressOrName
                   }`
 
-            const withVersion =
-              tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}`
+            const withVersion = withRecipient
 
             addTransaction(response, {
               summary: withVersion
