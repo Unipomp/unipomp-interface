@@ -147,7 +147,7 @@ export default function Header() {
             <UniIcon>
               <img src={isDark ? LogoDark : Logo} alt="logo" />
             </UniIcon>
-            <TitleText>
+            <TitleText style={{ marginLeft: '10px' }} >
               <img style={{ marginLeft: '4px', marginTop: '4px' }} src={isDark ? WordmarkDark : Wordmark} alt="logo" />
             </TitleText>
           </Title>
