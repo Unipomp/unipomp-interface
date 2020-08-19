@@ -3,7 +3,7 @@ import { ChainId, JSBI, Percent, Token, WETH } from '@unipomp/sdk'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
-export const ROUTER_ADDRESS = '0x225aE5dB95b092Bd1EAB0a8b4ACb9660D31E0Ad4'
+export const ROUTER_ADDRESS = '0x6908b6Ad04D1Eaa1f81c8A15B5654020c9d69b7f'
 
 // a list of tokens by chain
 type ChainTokenList = {
@@ -17,11 +17,7 @@ export const COMP = new Token(ChainId.MAINNET, '0xc00e94Cb662C3520282E6f57172140
 export const MKR = new Token(ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR', 'Maker')
 
 const WETH_ONLY: ChainTokenList = {
-  [ChainId.MAINNET]: [WETH[ChainId.MAINNET]],
-  [ChainId.ROPSTEN]: [WETH[ChainId.ROPSTEN]],
-  [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
-  [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
-  [ChainId.KOVAN]: [WETH[ChainId.KOVAN]]
+  [ChainId.MAINNET]: [WETH[ChainId.MAINNET]]
 }
 
 // used to construct intermediary pairs for trading
@@ -154,4 +150,4 @@ export const BETTER_TRADE_LINK_THRESHOLD = new Percent(JSBI.BigInt(75), JSBI.Big
 
 // the Uniswap Default token list lives here
 export const DEFAULT_TOKEN_LIST_URL =
-  'https://unpkg.com/@unipomp/default-token-list@latest/uniswap-default.tokenlist.json'
+  'https://unpkg.com/@unipomp/default-token-list@1.3.0/build/unipomp-default.tokenlist.json'
