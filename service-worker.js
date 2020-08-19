@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/unipomp-interface/precache-manifest.964902f64b53cb9b79be2cf56f87aba2.js"
+  "/unipomp-interface/precache-manifest.f8663c2f35dea46e03bd3d8e8e32326c.js"
 );
 
 self.addEventListener('message', (event) => {
